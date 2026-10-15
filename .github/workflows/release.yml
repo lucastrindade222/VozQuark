@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'   # use a mesma versão do seu projeto
+          java-version: '25'   # use a mesma versão do seu projeto
 
       - name: Build do JAR
         run: ./mvnw -B clean package -DskipTests -Dquarkus.package.jar.type=uber-jar
