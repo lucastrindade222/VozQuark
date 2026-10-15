@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="icon" type="image/png" href="public/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VozQuark</title>
+  {#bundle /}
+</head>
+<body>
+  <main class="card">
+    <header>
+      <h1>Voz<span>Quark</span></h1>
+      <p>Transforme texto em voz</p>
+    </header>
+
+    <textarea id="text" rows="6" maxlength="500"
+      placeholder="Digite o texto que deseja ouvir..."></textarea>
+
+    <div class="meta">
+      <span id="counter">0 / 500</span>
+    </div>
+
+    <button id="speak" type="button">Gerar áudio</button>
+
+    <p id="status" role="status"></p>
+
+    <section id="result" hidden>
+      <audio id="player" controls></audio>
+      <a id="download" class="link" download="vozquark.wav">Baixar WAV</a>
+    </section>
+
+    <footer class="footer">
+      <p>Feito por <strong><a href="https://github.com/lucastrindade222">lucastrindade222</a></strong></p>
+      <p>
+        Quer entrar em contato? Acesse meu
+        <a href="https://lucastrindade222.github.io/portfolio/"
+           target="_blank" rel="noopener noreferrer">portfólio</a>.
+      </p>
+    </footer>
+  </main>
+</body>
+</html>

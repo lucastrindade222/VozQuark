@@ -43,3 +43,10 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
+
+
+opt/
+target/
+build-input/
+node_modules/
+node_modules/
