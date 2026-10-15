@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: windows-latest
+            name: windows
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'   # use a mesma versão do seu projeto
+
+      - name: Build do JAR
+        run: ./mvnw -B clean package -DskipTests -Dquarkus.package.jar.type=uber-jar
+
+      - name: Preparar pasta de entrada
+        run: |
+          mkdir -p build-input/opt
+          cp target/*-runner.jar build-input/app.jar
+
+      - name: Baixar Piper (Linux)
+        if: matrix.name == 'linux'
+        run: |
+          curl -L -o piper.tar.gz https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
+          tar -xzf piper.tar.gz -C build-input/opt
+
+      - name: Baixar Piper (Windows)
+        if: matrix.name == 'windows'
+        run: |
+          curl -L -o piper.zip https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip
+          7z x piper.zip -obuild-input/opt
+
+      - name: Baixar modelo de voz
+        run: |
+          BASE=https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium
+          curl -L -o build-input/opt/piper/pt_BR-faber-medium.onnx      $BASE/pt_BR-faber-medium.onnx
+          curl -L -o build-input/opt/piper/pt_BR-faber-medium.onnx.json $BASE/pt_BR-faber-medium.onnx.json
+
+      - name: jpackage (Linux)
+        if: matrix.name == 'linux'
+        run: |
+          jpackage --type app-image --name VozQuark \
+            --input build-input --main-jar app.jar \
+            --java-options '-Dtts.piper.bin=$APPDIR/opt/piper/piper' \
+            --java-options '-Dtts.piper.model=$APPDIR/opt/piper/pt_BR-faber-medium.onnx'
+          tar -czf VozQuark-linux.tar.gz VozQuark
+
+      - name: jpackage (Windows)
+        if: matrix.name == 'windows'
+        run: |
+          jpackage --type app-image --name VozQuark --win-console \
+            --input build-input --main-jar app.jar \
+            --java-options '-Dtts.piper.bin=$APPDIR/opt/piper/piper.exe' \
+            --java-options '-Dtts.piper.model=$APPDIR/opt/piper/pt_BR-faber-medium.onnx'
+          7z a VozQuark-windows.zip VozQuark
+
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            VozQuark-linux.tar.gz
+            VozQuark-windows.zip
