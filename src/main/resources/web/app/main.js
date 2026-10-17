@@ -7,10 +7,14 @@ const $ = (id) => document.getElementById(id);
 const text = $('text');
 const counter = $('counter');
 const speak = $('speak');
+const quit = $('quit');
 const status = $('status');
 const result = $('result');
 const player = $('player');
 const download = $('download');
+let currentBlob = null;
+const save = $('save');
+const saveInfo = $('saveInfo');
 
 let currentUrl = null;
 
@@ -30,6 +34,23 @@ function friendlyError(res, body) {
   if (res.status === 400) return `Texto inválido (use de ${MIN} a ${MAX} caracteres).`;
   return 'Erro ao gerar o áudio. Tente novamente.';
 }
+
+quit.addEventListener('click', async () => {
+  if (!window.confirm('Deseja realmente encerrar o VozQuark?')) return;
+
+  quit.disabled = true;
+  quit.textContent = 'Encerrando…';
+
+  try {
+    const res = await fetch('/shutdown', { method: 'POST' });
+    if (!res.ok) throw new Error('Falha ao solicitar encerramento');
+    setStatus('Aplicativo encerrado.');
+  } catch {
+    setStatus('Não foi possível encerrar o aplicativo.', true);
+    quit.disabled = false;
+    quit.textContent = 'Encerrar aplicação';
+  }
+});
 
 speak.addEventListener('click', async () => {
   const value = text.value.trim();
@@ -56,6 +77,11 @@ speak.addEventListener('click', async () => {
     }
 
     const blob = await res.blob();
+
+    currentBlob = blob;
+    saveInfo.textContent = '';
+    saveInfo.classList.remove('error');
+
     if (currentUrl) URL.revokeObjectURL(currentUrl);
     currentUrl = URL.createObjectURL(blob);
 
@@ -69,5 +95,27 @@ speak.addEventListener('click', async () => {
   } finally {
     speak.disabled = false;
     speak.classList.remove('loading');
+  }
+});
+
+save.addEventListener('click', async () => {
+  if (!currentBlob) return;
+  save.disabled = true;
+  saveInfo.classList.remove('error');
+  saveInfo.textContent = 'Salvando…';
+  try {
+    const res = await fetch('/audio/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'audio/wav', 'X-Requested-With': 'VozQuark' },
+      body: currentBlob,
+    });
+    if (!res.ok) throw new Error();
+    const { path } = await res.json();
+    saveInfo.textContent = `Salvo em: ${path}`;
+  } catch {
+    saveInfo.textContent = 'Não foi possível salvar o áudio.';
+    saveInfo.classList.add('error');
+  } finally {
+    save.disabled = false;
   }
 });

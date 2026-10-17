@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <link rel="icon" type="image/png" href="public/favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VozQuark</title>
@@ -9,6 +9,15 @@
 </head>
 <body>
   <main class="card">
+    <button id="quit" class="quit" type="button"
+            aria-label="Encerrar aplicação" title="Encerrar aplicação">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2v10"/>
+        <path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>
+      </svg>
+    </button>
+
     <header>
       <h1>Voz<span>Quark</span></h1>
       <p>Transforme texto em voz</p>
@@ -24,10 +33,13 @@
     <button id="speak" type="button">Gerar áudio</button>
 
     <p id="status" role="status"></p>
-
     <section id="result" hidden>
       <audio id="player" controls></audio>
-      <a id="download" class="link" download="vozquark.wav">Baixar WAV</a>
+      <div class="result-actions">
+        <button id="save" type="button" class="btn-save">Salvar na pasta</button>
+        <a id="download" class="link" download="vozquark.wav">Baixar WAV</a>
+      </div>
+      <p id="saveInfo" role="status"></p>
     </section>
 
     <footer class="footer">
@@ -39,5 +51,14 @@
       </p>
     </footer>
   </main>
+
+  <dialog id="quitDialog">
+    <p>Deseja realmente encerrar o VozQuark?</p>
+    <p class="hint">O servidor será desligado e você precisará abri-lo de novo para usar.</p>
+    <div class="actions">
+      <button id="cancelQuit" type="button" class="ghost">Cancelar</button>
+      <button id="confirmQuit" type="button" class="danger">Sim, encerrar</button>
+    </div>
+  </dialog>
 </body>
 </html>
